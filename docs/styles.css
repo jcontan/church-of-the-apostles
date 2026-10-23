@@ -4,9 +4,6 @@
   --soft: #5e5248;
   --red: #b1281e;
   --rule: #cbb99f;
-  /* The cross, and the same cross grown 1.6 units on every side for its red rule */
-  --cross: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-2 -2 104 144'%3E%3Cpath d='M43 0h14v38h43v14H57v88H43V52H0V38h43z'/%3E%3C/svg%3E");
-  --cross-rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-2 -2 104 144'%3E%3Cpath d='M41.4 -1.6H58.6V36.4H101.6V53.6H58.6V141.6H41.4V53.6H-1.6V36.4H41.4z'/%3E%3C/svg%3E");
 }
 * { box-sizing: border-box; margin: 0; }
 html { -webkit-text-size-adjust: 100%; }
@@ -26,23 +23,29 @@ a { color: inherit; text-decoration-color: var(--red); text-underline-offset: 3p
 .sc { font-variant: small-caps; letter-spacing: .06em; }
 
 /* ---------- The opening: a title page with a cross cut through it ---------- */
-.reveal { height: 270vh; position: relative; }
+/* Without the script (very old browsers) the opening is a plain one-screen title page */
+.reveal { height: 100vh; position: relative; }
+.js .reveal { height: 270vh; }
 .stage {
-  position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden;
-  background: var(--paper) radial-gradient(ellipse at 50% 40%, #f9f3e9 0%, transparent 65%);
+  position: -webkit-sticky; position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden;
+  background: var(--paper);
 }
-.rule-x, .window {
-  position: absolute; inset: 0;
-  -webkit-mask-position: center 54%; mask-position: center 54%;
-  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
-  -webkit-mask-size: var(--m, 20vmin) auto; mask-size: var(--m, 20vmin) auto;
-}
-.rule-x { background: var(--red); -webkit-mask-image: var(--cross-rule); mask-image: var(--cross-rule); }
-.window { -webkit-mask-image: var(--cross); mask-image: var(--cross); }
+/* The photo fills the stage. Eight paper panels sit on top and leave a cross-shaped opening.
+   script.js slides the panels apart with transforms only, so nothing repaints while scrolling. */
+.window { display: none; }
+.js .window { display: block; position: absolute; top: 0; right: 0; bottom: 0; left: 0; }
 .window picture { width: 100%; height: 100%; }
-.window img { width: 100%; height: 100%; object-fit: cover; object-position: 30% 40%; transform-origin: 0 0; will-change: transform; }
+.window img { width: 100%; height: 100%; object-fit: cover; object-position: 30% 40%; transform-origin: 0 0; will-change: transform; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+/* Shown instead of the cross on browsers too old for the effect */
+.still-mark { position: absolute; left: 0; right: 0; top: 46%; transform: translateY(-50%); text-align: center; color: var(--red); font-size: clamp(5rem, 24vmin, 9rem); line-height: 1; }
+.js .still-mark { display: none; }
+.paper { display: none; }
+.js .paper { display: block; position: absolute; top: 0; right: 0; bottom: 0; left: 0; pointer-events: none; }
+.paper i { position: absolute; left: 0; top: 0; background: var(--paper); will-change: transform; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+.rule-x { display: none; }
+.js .rule-x { display: block; position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; transform-origin: 0 0; will-change: transform, opacity; }
 
-.tp { position: absolute; left: 0; right: 0; text-align: center; padding: 0 1.25rem; z-index: 2; }
+.tp { position: absolute; left: 0; right: 0; text-align: center; padding: 0 1.25rem; z-index: 2; will-change: opacity; }
 .tp.top { top: clamp(1.75rem, 6vh, 3.5rem); }
 .tp.top h1 {
   font-weight: 500; font-size: clamp(1.55rem, 4.2vw, 2.6rem); line-height: 1.15;
@@ -133,7 +136,7 @@ address { font-style: normal; font-size: 1.45rem; line-height: 1.4; font-variant
 .js .fade.in { opacity: 1; transform: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal { height: auto; }
+  .js .reveal { height: auto; }
   .stage { position: relative; }
   .js .fade { opacity: 1; transform: none; transition: none; }
   .hint .chev i { animation: none; opacity: 1; }
@@ -141,7 +144,6 @@ address { font-style: normal; font-size: 1.45rem; line-height: 1.4; font-variant
 
 @media (max-width: 720px) {
   body { font-size: 1.125rem; }
-  .rule-x, .window { -webkit-mask-size: var(--m, 30vmin) auto; mask-size: var(--m, 30vmin) auto; -webkit-mask-position: center 50%; mask-position: center 50%; }
   .page { grid-template-columns: minmax(0, 1fr); padding: 0 1.25rem; }
   .page > *, .margin { grid-column: 1; }
   .margin { text-align: left; padding: 0 0 .4rem; }
