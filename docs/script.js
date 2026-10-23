@@ -18,8 +18,8 @@
   var cap = stage.querySelector('.plate-cap');
   var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Measured on load and resize, never per frame
-  var W, H, cy, start, end, S, fx, dw, dh, ruleOn = true;
+  // Measured on load and real resizes, never per frame
+  var W = 0, H = 0, cy, start, end, fx, dw, dh, top0, span, ruleOn = true;
 
   function measure() {
     // The stage is 100svh, so its height stays put while Safari's address bar comes and goes
@@ -36,8 +36,18 @@
     cy = above + gap / 2;                              // vertical centre of the cross
     start = Math.min(Math.min(W, H) * (W <= 720 ? .30 : .20), room / 1.4, W * .5);
     end = Math.max(W, H) * 9;                         // arms far wider than the screen
-    S = Math.max(W, H) * 3;                           // panel size: always reaches past the screen edges
-    for (var i = 0; i < panels.length; i++) { panels[i].style.width = panels[i].style.height = S + 'px'; }
+    // Every panel is just the size of the screen; draw() keeps each one's inner corner on screen.
+    // Small layers matter: oversized ones are expensive on high-density iPhone screens.
+    for (var i = 0; i < panels.length; i++) { panels[i].style.width = W + 2 + 'px'; panels[i].style.height = H + 2 + 'px'; }
+
+    // The red rule only shows while the cross is at rest, so size it once here
+    var u0 = start / 100;
+    rule.style.width = start + 'px';
+    rule.style.height = 1.4 * start + 'px';
+    t(rule, W / 2 - 50 * u0, cy - 70 * u0);
+
+    top0 = reveal.offsetTop;
+    span = Math.max(1, reveal.offsetHeight - H);
 
     var iw = img.naturalWidth || 2400, ih = img.naturalHeight || 1111;
     var k = Math.max(W / iw, H / ih);
@@ -48,6 +58,8 @@
   }
 
   function t(el, x, y) { el.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0)'; }
+  function clampX(x) { return Math.min(W, Math.max(0, x)); }   // clamp a point onto the screen
+  function clampY(y) { return Math.min(H, Math.max(0, y)); }
 
   function draw(p) {
     var e = Math.pow(p, 1.7);                         // opens from the first bit of scroll, then speeds up
@@ -55,25 +67,27 @@
     var u = m / 100;                                  // the cross is drawn on a 100 x 140 grid
     var L = W / 2 - 50 * u, T = cy - 70 * u;
 
-    // Paper panels: four corners between the arms, then four bands beyond the arm ends
-    t(panels[0], L + 43 * u - S, T + 38 * u - S);
-    t(panels[1], L + 57 * u,     T + 38 * u - S);
-    t(panels[2], L + 43 * u - S, T + 52 * u);
-    t(panels[3], L + 57 * u,     T + 52 * u);
-    t(panels[4], W / 2 - S / 2,  T - S);
-    t(panels[5], W / 2 - S / 2,  T + 140 * u);
-    t(panels[6], L - S,          cy - S / 2);
-    t(panels[7], L + 100 * u,    cy - S / 2);
+    // Paper panels, each covering everything on one side of a corner or edge of the cross:
+    // four corners between the arms, then the paper above, below, left and right of the cross.
+    // Each anchor is clamped onto the screen, so a screen-sized panel always covers its share.
+    var a = clampX(L + 43 * u), b = clampX(L + 57 * u), c = clampY(T + 38 * u), d = clampY(T + 52 * u);
+    t(panels[0], a - W - 1, c - H - 1);
+    t(panels[1], b - 1,     c - H - 1);
+    t(panels[2], a - W - 1, d - 1);
+    t(panels[3], b - 1,     d - 1);
+    t(panels[4], -1, clampY(T) - H - 1);
+    t(panels[5], -1, clampY(T + 140 * u) - 1);
+    t(panels[6], clampX(L) - W - 1, -1);
+    t(panels[7], clampX(L + 100 * u) - 1, -1);
 
-    // The thin red rule around the cross leaves as soon as the cross starts to open
-    var ro = 1 - Math.min(1, e * 30);
-    if (ro > 0) {
-      rule.style.width = m + 'px';
-      rule.style.height = 1.4 * m + 'px';
-      t(rule, L, T);
+    // The thin red rule around the cross shows only at rest: it vanishes the moment scrolling
+    // starts (a lingering fade would sit on top of the opening cross) and fades back in at the top
+    var on = p < .002;
+    if (on !== ruleOn) {
+      ruleOn = on;
+      rule.style.transition = on ? 'opacity .4s ease' : 'none';
+      rule.style.opacity = on ? 1 : 0;
     }
-    if ((ro > 0) !== ruleOn) { ruleOn = ro > 0; rule.style.visibility = ruleOn ? 'visible' : 'hidden'; }
-    rule.style.opacity = ro;
 
     // Begin zoomed on the crucifix inside the cross, then pull back to the whole room.
     // The crucifix sits 23.7% across and 21.5% down in the sanctuary photo.
@@ -89,25 +103,34 @@
     cap.style.opacity = Math.max(0, (p - .8) / .2);
   }
 
+  // Reading scroll position (rather than measuring elements) avoids a layout pass every frame
   function target() {
-    var r = reveal.getBoundingClientRect();
-    return Math.min(1, Math.max(0, -r.top / (r.height - H)));
+    var y = window.pageYOffset || document.documentElement.scrollTop;
+    return Math.min(1, Math.max(0, (y - top0) / span));
   }
 
-  // Ease toward the scroll position each frame, which smooths out uneven touch and
-  // momentum scrolling while staying close behind the finger
-  var cur = 0, running = false;
-  function tick() {
+  // Glide toward the scroll position with a fixed time constant. iPhone scrolling reports
+  // positions unevenly, and smoothing by elapsed time (not per frame) keeps the motion even
+  // on both 60Hz and 120Hz screens while staying close behind the finger.
+  var TAU = 85;                                       // ms
+  var cur = 0, running = false, last = 0;
+  function tick(now) {
+    var dt = last ? Math.min(64, now - last) : 16;
+    last = now;
     var goal = target();
-    cur += (goal - cur) * .45;
-    if (Math.abs(goal - cur) < .0004) cur = goal;
+    cur += (goal - cur) * (1 - Math.exp(-dt / TAU));
+    if (Math.abs(goal - cur) < .0003) cur = goal;
     draw(cur);
     running = cur !== goal;
-    if (running) requestAnimationFrame(tick);
+    if (running) requestAnimationFrame(tick); else last = 0;
   }
   function kick() { if (!running) { running = true; requestAnimationFrame(tick); } }
 
   function relayout() { measure(); cur = still ? 0 : target(); draw(cur); }
+
+  // Safari fires resize while its address bar slides in and out during scrolling. The stage
+  // (100svh) doesn't change size then, so only lay out again when it really does.
+  function onResize() { if (stage.clientWidth !== W || stage.clientHeight !== H) relayout(); }
 
   // Safari before iOS 15.4 has no svh unit, and its 100vh runs under the bottom toolbar,
   // hiding the "Scroll down" hint. There, size the stage to the visible height instead
@@ -118,7 +141,7 @@
   addEventListener('orientationchange', function () { setTimeout(function () { fitStage(); relayout(); }, 300); });
 
   relayout();
-  addEventListener('resize', relayout);
+  addEventListener('resize', onResize);
   img.addEventListener('load', relayout);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);   // title height changes once the web font arrives
   if (!still) addEventListener('scroll', kick, { passive: true });

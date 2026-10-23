@@ -31,11 +31,13 @@ Modelled on a printed missal: black and red on cream paper.
 - **Smoothness matters.** Everything per frame is `transform` or `opacity`; nothing should change layout or force a repaint. An earlier version animated `mask-size` and was jittery on iPhone.
   - Don't reintroduce CSS masks or clip-path animation.
   - Don't set `object-position` per frame.
-  - Don't read `innerHeight` per frame.
-- Scroll input is eased (each frame moves 45% of the way to the scroll position), which evens out touch and momentum scrolling.
+  - Don't read `innerHeight` or call `getBoundingClientRect` per frame; progress comes from `pageYOffset`.
+  - Keep layers small: each panel is screen-sized, with its anchor clamped onto the screen. Huge layers stutter on 3× iPhone screens.
+  - Ignore `resize` events where the stage size didn't change. Safari fires them as the address bar slides during the first scroll, and re-laying out there caused a visible hitch.
+- Scroll input is smoothed with an 85ms time constant, based on elapsed time rather than per frame, so 60Hz and 120Hz iPhones behave the same. Raising it smooths more but lags the finger.
 - The photo starts at 2.4× zoom, framed on the crucifix (23.7% across and 21.5% down in the sanctuary crop), and pulls back to 1×. Translation is clamped so the scaled photo always covers the stage.
 - The cross's starting size and position come from measuring the actual gap between the title (`.tp.top`) and the "Scroll down" block (`.tp.bottom`), so it can't overlap them on any screen. The script re-measures on resize, rotation and web-font load.
-- The thin red rule is an SVG outline that fades out as soon as the cross opens.
+- The thin red rule is an SVG outline, sized once. It vanishes the moment scrolling starts and fades back in at the top.
 - **Old browsers:** the head script adds the `js` class only if IntersectionObserver and requestAnimationFrame exist. Without it, the page shows a plain one-screen title page with a static ✠ (`.still-mark`), no photo or animation, and all sections visible. Safari before iOS 15.4 has no `svh`, so the script sizes the stage to `innerHeight` on load and rotation.
 - `prefers-reduced-motion` keeps the title page with a static cross and turns off the fades and the chevron animation.
 - If the sanctuary crop changes in `tools/build_images.py`, update the crucifix fractions in `script.js`.

@@ -43,7 +43,7 @@ a { color: inherit; text-decoration-color: var(--red); text-underline-offset: 3p
 .js .paper { display: block; position: absolute; top: 0; right: 0; bottom: 0; left: 0; pointer-events: none; }
 .paper i { position: absolute; left: 0; top: 0; background: var(--paper); will-change: transform; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
 .rule-x { display: none; }
-.js .rule-x { display: block; position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; transform-origin: 0 0; will-change: transform, opacity; }
+.js .rule-x { display: block; position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
 
 .tp { position: absolute; left: 0; right: 0; text-align: center; padding: 0 1.25rem; z-index: 2; will-change: opacity; }
 .tp.top { top: clamp(1.75rem, 6vh, 3.5rem); }
