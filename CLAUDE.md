@@ -27,12 +27,12 @@ Modelled on a printed missal: black and red on cream paper.
 - **Copy** is deliberately minimal: core information only. There is no seasonal schedule, sermons or gallery unless Jason asks for them.
 
 ## The opening cross reveal (`script.js`)
-- A sticky stage, 270vh tall. The sanctuary photo fills it, and **eight paper-coloured panels** (`.paper i`) cover the photo except for a cross-shaped opening: four corners between the arms, plus four bands beyond the arm ends. Scrolling slides the panels apart, growing the cross (progress is cubed) until the photo fills the screen.
+- A sticky stage inside a 180vh section, so the reveal takes about 0.8 screens of scrolling. The sanctuary photo fills it, and **eight paper-coloured panels** (`.paper i`) cover the photo except for a cross-shaped opening: four corners between the arms, plus four bands beyond the arm ends. Scrolling slides the panels apart, growing the cross (progress^1.7, so it starts moving right away) until the photo fills the screen. Jason found the earlier 270vh / cubed version far too slow.
 - **Smoothness matters.** Everything per frame is `transform` or `opacity`; nothing should change layout or force a repaint. An earlier version animated `mask-size` and was jittery on iPhone.
   - Don't reintroduce CSS masks or clip-path animation.
   - Don't set `object-position` per frame.
   - Don't read `innerHeight` per frame.
-- Scroll input is eased (each frame moves 28% of the way to the scroll position), which evens out touch and momentum scrolling.
+- Scroll input is eased (each frame moves 45% of the way to the scroll position), which evens out touch and momentum scrolling.
 - The photo starts at 2.4× zoom, framed on the crucifix (23.7% across and 21.5% down in the sanctuary crop), and pulls back to 1×. Translation is clamped so the scaled photo always covers the stage.
 - The cross's starting size and position come from measuring the actual gap between the title (`.tp.top`) and the "Scroll down" block (`.tp.bottom`), so it can't overlap them on any screen. The script re-measures on resize, rotation and web-font load.
 - The thin red rule is an SVG outline that fades out as soon as the cross opens.

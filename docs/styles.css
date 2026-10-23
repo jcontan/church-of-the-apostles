@@ -25,7 +25,7 @@ a { color: inherit; text-decoration-color: var(--red); text-underline-offset: 3p
 /* ---------- The opening: a title page with a cross cut through it ---------- */
 /* Without the script (very old browsers) the opening is a plain one-screen title page */
 .reveal { height: 100vh; position: relative; }
-.js .reveal { height: 270vh; }
+.js .reveal { height: 180vh; }
 .stage {
   position: -webkit-sticky; position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden;
   background: var(--paper);

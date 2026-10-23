@@ -50,7 +50,7 @@
   function t(el, x, y) { el.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0)'; }
 
   function draw(p) {
-    var e = p * p * p;                                // slow at first, then opens
+    var e = Math.pow(p, 1.7);                         // opens from the first bit of scroll, then speeds up
     var m = start + (end - start) * e;                // cross width in px
     var u = m / 100;                                  // the cross is drawn on a 100 x 140 grid
     var L = W / 2 - 50 * u, T = cy - 70 * u;
@@ -84,9 +84,9 @@
     var oy = Math.min(0, Math.max(H * (1 - s), (ty - s * py) * q));
     img.style.transform = 'translate3d(' + ox + 'px,' + oy + 'px,0) scale(' + s + ')';
 
-    var fade = 1 - Math.min(1, p * 2.6);
+    var fade = 1 - Math.min(1, p * 3);
     for (var i = 0; i < words.length; i++) { words[i].style.opacity = fade; }
-    cap.style.opacity = Math.max(0, (p - .85) / .15);
+    cap.style.opacity = Math.max(0, (p - .8) / .2);
   }
 
   function target() {
@@ -94,12 +94,12 @@
     return Math.min(1, Math.max(0, -r.top / (r.height - H)));
   }
 
-  // Ease toward the scroll position a little each frame, which smooths out uneven
-  // touch and momentum scrolling without making the effect feel laggy
+  // Ease toward the scroll position each frame, which smooths out uneven touch and
+  // momentum scrolling while staying close behind the finger
   var cur = 0, running = false;
   function tick() {
     var goal = target();
-    cur += (goal - cur) * .28;
+    cur += (goal - cur) * .45;
     if (Math.abs(goal - cur) < .0004) cur = goal;
     draw(cur);
     running = cur !== goal;
