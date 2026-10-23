@@ -1,0 +1,14 @@
+# Original camera photos (large; regenerate web images with tools/build_images.py)
+# (root folder only: macOS paths are case-insensitive, so *.JPG would also catch docs/images/*.jpg)
+/*.jpeg
+/*.jpg
+/*.heic
+
+# Local-only working material
+mockups/
+reference/
+PLAN.md
+.claude/
+
+.DS_Store
+__pycache__/
