@@ -4,7 +4,7 @@ A one-page static site for Church of the Apostles, Lutheran (NALC), North Tonawa
 
 ## Hosting
 - GitHub Pages, repo `jcontan/church-of-the-apostles`, serving the `main` branch `/docs` folder. There is no build step and no Actions workflow; pushing to `main` deploys.
-- Live at https://jcontan.github.io/church-of-the-apostles/. No custom domain yet. The old domain `churchoftheapostleslutheran.org` lapsed and the church may get a new one.
+- Live at https://churchoftheapostleslutheran.com/ (custom domain via `docs/CNAME`; www redirects to the bare domain, and the old github.io URL redirects too). The domain is registered at GoDaddy, with DNS pointing at GitHub Pages: four A and four AAAA records on `@`, and `www` as a CNAME to `jcontan.github.io`. The old `.org` domain lapsed and is not used.
 - On this Mac the active `gh` account is often `bobbycorpllc`. Run repo operations as `jcontan` (for example `GH_TOKEN=$(gh auth token --user jcontan) gh ...`) without switching the global account.
 
 ## Where content lives (`docs/index.html`)
@@ -14,7 +14,7 @@ A one-page static site for Church of the Apostles, Lutheran (NALC), North Tonawa
   3. the meta description, og:description and JSON-LD `description` in `<head>`
 - **Phones and email:** the `.contact` list under "Come and See", plus the JSON-LD `telephone`/`email`. The parish office is the church's main number; the pastor's number is listed separately.
 - **Pastor:** "The Rev. Troy A. Mulvaine", in the "Evangelical Catholic" section and in the JSON-LD `employee`.
-- **Absolute URLs** (canonical, og:url, og:image, JSON-LD url/image) use the github.io address. Update all of them if a custom domain is added, and add `docs/CNAME`.
+- **Absolute URLs** (canonical, og:url, og:image, JSON-LD url/image) use https://churchoftheapostleslutheran.com/. Keep them in sync if the domain ever changes, along with `docs/CNAME`.
 
 ## Design system: "Rubric"
 Modelled on a printed missal: black and red on cream paper.

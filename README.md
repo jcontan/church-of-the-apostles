@@ -2,7 +2,7 @@
 
 The website for Church of the Apostles, Lutheran, 75 17th Avenue, North Tonawanda, New York. The church is a congregation of the North American Lutheran Church.
 
-**Live:** https://jcontan.github.io/church-of-the-apostles/
+**Live:** https://churchoftheapostleslutheran.com/ (the old https://jcontan.github.io/church-of-the-apostles/ address redirects there)
 
 The site is a single static page with no build step. GitHub Pages serves the `docs/` folder from the `main` branch.
 
